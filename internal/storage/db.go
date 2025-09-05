@@ -21,7 +21,7 @@ func Init() {
 		path = "wishlist.db"
 	}
 
-	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("./wishlist.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Error al abrir base de datos: %v", err)
 	}
