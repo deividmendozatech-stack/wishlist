@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/deividmendozatech_stack/wishlist/internal/auth"
-	"github.com/deividmendozatech_stack/wishlist/internal/models"
-	"github.com/deividmendozatech_stack/wishlist/internal/storage"
+	"github.com/deividmendozatech-stack/wishlist/internal/auth"
+	"github.com/deividmendozatech-stack/wishlist/internal/models"
+	"github.com/deividmendozatech-stack/wishlist/internal/storage"
 
 	"github.com/gorilla/mux"
 )

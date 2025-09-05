@@ -8,8 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	// paquetes internos de tu módulo
-	"github.com/deividmendozatech_stack/wishlist/internal/models"
-	"github.com/deividmendozatech_stack/wishlist/internal/storage"
+	"github.com/deividmendozatech-stack/wishlist/internal/models"
+	"github.com/deividmendozatech-stack/wishlist/internal/storage"
 )
 
 // Estructura de la solicitud de registro

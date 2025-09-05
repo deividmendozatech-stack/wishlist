@@ -8,11 +8,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	// JWT propio
-	"github.com/deividmendozatech_stack/wishlist/internal/auth"
+	"github.com/deividmendozatech-stack/wishlist/internal/auth"
 
 	// Modelos y DB
-	"github.com/deividmendozatech_stack/wishlist/internal/models"
-	"github.com/deividmendozatech_stack/wishlist/internal/storage"
+	"github.com/deividmendozatech-stack/wishlist/internal/models"
+	"github.com/deividmendozatech-stack/wishlist/internal/storage"
 )
 
 // LoginRequest estructura de datos de entrada
