@@ -41,6 +41,7 @@ func main() {
 	secured.HandleFunc("/wishlist/{id}/books", handlers.ListBooksHandler).Methods("GET")
 	secured.HandleFunc("/wishlist/{id}/books/{bookID}", handlers.RemoveBookHandler).Methods("DELETE")
 	secured.HandleFunc("/books/search", handlers.SearchGoogleBooksHandler).Methods("GET")
+	secured.HandleFunc("/users", handlers.ListUsersHandler).Methods("GET")
 
 	log.Println("Servidor corriendo en http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
