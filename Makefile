@@ -1,27 +1,52 @@
-APP := wishlist
-BIN := bin/$(APP)
-PORT := 8080
+.PHONY: run build swag tidy \
+        test-service test-handler test-repo test-all
 
-.PHONY: build run test clean swagger docker-up docker-down
+# Levanta el servidor local
+run:
+	go run ./cmd/server
 
+# Compila el binario en ./bin/server
 build:
-	go build -o $(BIN) ./cmd/server
+	go build -o bin/server ./cmd/server
 
-run: build
-	./$(BIN)
-
-test:
-	go test -v ./...
-
-swagger:
+# Genera documentación Swagger en ./docs
+swag:
 	swag init -g cmd/server/main.go -o docs
 
-clean:
-	rm -rf bin
+# Limpia y actualiza dependencias
+tidy:
+	go mod tidy && go mod verify
 
-docker-up:
-	docker build -t $(APP):latest .
-	docker run --rm -it -p $(PORT):8080 --env-file .env $(APP):latest
+# Tests unitarios de la capa Service
+test-service:
+	go test ./internal/service -v
 
-docker-down:
-	docker stop $$(docker ps -q --filter ancestor=$(APP):latest) || true
+# Tests unitarios de la capa Handler
+test-handler:
+	go test ./internal/handler -v
+
+# Tests de integración de la implementación GORM
+test-repo:
+	go test ./internal/repository/gorm -v
+
+# Ejecuta todos los tests del proyecto
+test-all:
+	go test ./... -v
+
+--------USO-----------
+
+Ejecutar servidor:
+
+make run
+
+Generar Swagger:
+
+make swag
+
+Correr todos los tests:
+
+make test-all
+
+Solo service:
+
+make test-service
