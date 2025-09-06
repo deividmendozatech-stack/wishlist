@@ -1,48 +1,41 @@
+// @title Wishlist API
+// @version 1.0
+// @description API para gestionar listas de deseos de libros
+// @host localhost:8080
+// @BasePath /api
+
 package main
 
 import (
 	"log"
 	"net/http"
+	"os"
 
+	_ "github.com/deividmendozatech-stack/wishlist/docs" // swagger embed files
+	"github.com/deividmendozatech-stack/wishlist/internal/handler"
+	"github.com/deividmendozatech-stack/wishlist/internal/platform/storage"
+	gormrepo "github.com/deividmendozatech-stack/wishlist/internal/repository/gorm"
+	"github.com/deividmendozatech-stack/wishlist/internal/service"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
-
-	// paquetes internos
-	"github.com/deividmendozatech-stack/wishlist/internal/auth"
-	"github.com/deividmendozatech-stack/wishlist/internal/handlers"
-	"github.com/deividmendozatech-stack/wishlist/internal/models"
-	"github.com/deividmendozatech-stack/wishlist/internal/storage"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
-	// carga variables de entorno
-	_ = godotenv.Load()
+	db, err := storage.NewConnection(os.Getenv("DB_PATH"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Inicializa la base de datos y migra modelos
-	storage.Init()
-	storage.DB.AutoMigrate(&models.User{}, &models.Wishlist{}, &models.Book{})
+	repo := gormrepo.NewWishlistRepo(db)
+	svc := service.NewWishlistService(repo)
+	h := handler.NewHTTPHandler(svc)
 
 	r := mux.NewRouter()
-
-	// subrouter con prefijo /api
 	api := r.PathPrefix("/api").Subrouter()
+	h.RegisterRoutes(api)
+	//Swagger UI
+	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	// Rutas públicas
-	api.HandleFunc("/register", handlers.RegisterHandler).Methods("POST")
-	api.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
-
-	// Rutas protegidas (usa middleware JWT)
-	secured := api.NewRoute().Subrouter()
-	secured.Use(auth.AuthMiddleware)
-	secured.HandleFunc("/wishlist", handlers.CreateWishlistHandler).Methods("POST")
-	secured.HandleFunc("/wishlist", handlers.ListWishlistsHandler).Methods("GET")
-	secured.HandleFunc("/wishlist/{id}", handlers.DeleteWishlistHandler).Methods("DELETE")
-	secured.HandleFunc("/wishlist/{id}/books", handlers.AddBookHandler).Methods("POST")
-	secured.HandleFunc("/wishlist/{id}/books", handlers.ListBooksHandler).Methods("GET")
-	secured.HandleFunc("/wishlist/{id}/books/{bookID}", handlers.RemoveBookHandler).Methods("DELETE")
-	secured.HandleFunc("/books/search", handlers.SearchGoogleBooksHandler).Methods("GET")
-	secured.HandleFunc("/users", handlers.ListUsersHandler).Methods("GET")
-
-	log.Println("Servidor corriendo en http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Servidor en http://localhost:8080")
+	http.ListenAndServe(":8080", r)
 }

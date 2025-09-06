@@ -1,0 +1,68 @@
+basePath: /api
+definitions:
+  handler.CreateWishlistRequest:
+    properties:
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para gestionar listas de deseos de libros
+  title: Wishlist API
+  version: "1.0"
+paths:
+  /wishlist:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+      summary: Lista las wishlists del usuario
+      tags:
+      - wishlist
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Datos de la lista
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateWishlistRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      summary: Crea una nueva wishlist
+      tags:
+      - wishlist
+  /wishlist/{id}:
+    delete:
+      parameters:
+      - description: ID de la wishlist
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Elimina una wishlist por ID
+      tags:
+      - wishlist
+swagger: "2.0"
