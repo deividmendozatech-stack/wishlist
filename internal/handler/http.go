@@ -11,7 +11,7 @@ import (
 
 // HTTPHandler agrupa los endpoints HTTP.
 type HTTPHandler struct {
-	wishlist *service.WishlistService
+	wishlist service.WishlistUsecase
 }
 
 // CreateWishlistRequest representa el body de creación de wishlist
@@ -20,7 +20,7 @@ type CreateWishlistRequest struct {
 }
 
 // NewHTTPHandler crea una nueva instancia del handler.
-func NewHTTPHandler(w *service.WishlistService) *HTTPHandler {
+func NewHTTPHandler(w service.WishlistUsecase) *HTTPHandler {
 	return &HTTPHandler{wishlist: w}
 }
 
@@ -41,14 +41,11 @@ func (h *HTTPHandler) RegisterRoutes(r *mux.Router) {
 // @Failure 400
 // @Router /wishlist [post]
 func (h *HTTPHandler) CreateWishlist(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Name string `json:"name"`
-	}
+	var req CreateWishlistRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	// en un caso real, el userID vendrá del middleware de auth
 	userID := uint(1)
 	if err := h.wishlist.Create(userID, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

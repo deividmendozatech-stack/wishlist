@@ -1,8 +1,7 @@
 package domain
 
 type Wishlist struct {
-	ID     uint
-	Name   string
-	UserID uint
-	Books  []Book
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	UserID uint   `json:"user_id"`
 }

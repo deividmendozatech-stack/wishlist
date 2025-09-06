@@ -5,6 +5,12 @@ import (
 	"github.com/deividmendozatech-stack/wishlist/internal/repository"
 )
 
+type WishlistUsecase interface {
+	Create(userID uint, name string) error
+	List(userID uint) ([]domain.Wishlist, error)
+	Delete(userID, id uint) error
+}
+
 type WishlistService struct {
 	repo repository.WishlistRepository
 }
@@ -14,8 +20,11 @@ func NewWishlistService(r repository.WishlistRepository) *WishlistService {
 }
 
 func (s *WishlistService) Create(userID uint, name string) error {
-	w := &domain.Wishlist{Name: name, UserID: userID}
-	return s.repo.Create(w)
+	wl := &domain.Wishlist{
+		UserID: userID,
+		Name:   name,
+	}
+	return s.repo.Create(wl)
 }
 
 func (s *WishlistService) List(userID uint) ([]domain.Wishlist, error) {
@@ -25,5 +34,3 @@ func (s *WishlistService) List(userID uint) ([]domain.Wishlist, error) {
 func (s *WishlistService) Delete(userID, id uint) error {
 	return s.repo.Delete(userID, id)
 }
-
-// AddBook, ListBooks, RemoveBook ... se implementan igual
