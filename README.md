@@ -1,3 +1,5 @@
+[![Go CI](https://github.com/deividmendozatech-stack/wishlist/actions/workflows/ci.yml/badge.svg)](https://github.com/deividmendozatech-stack/wishlist/actions/workflows/ci.yml)
+
 # 📚 Wishlist API
 
 API REST en **Go 1.25** para gestionar una lista de deseos de libros.  
