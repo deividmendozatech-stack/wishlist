@@ -127,10 +127,9 @@ curl "http://localhost:8080/api/books/search?q=golang"
 | 400    | `"missing query param q"` | Falta el parámetro `q` en la consulta                  |
 | 500    | `"error ..."`             | Fallo al conectar o procesar respuesta de Google Books |
 
-## 📷 Vista en Swagger
 
+📷 Vista en Swagger:
 A continuación se muestra cómo se visualiza el endpoint **`/api/books/search`** en Swagger UI:
-
 ![Swagger Google Books](docs/images/swagger-googlebooks.png)
 
 
