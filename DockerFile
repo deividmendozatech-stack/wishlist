@@ -1,18 +1,27 @@
-# Etapa de build
-FROM golang:1.25-alpine AS builder
+# Multi-stage Dockerfile for building and running the Wishlist API
 
+# ---------- Build Stage ----------
+FROM golang:1.25-alpine AS builder
 WORKDIR /app
+
+# Download dependencies first to leverage layer caching
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy the rest of the source code and compile
 COPY . .
 RUN go build -o wishlist ./cmd/server
 
-# Etapa final
+# ---------- Runtime Stage ----------
 FROM alpine:latest
 WORKDIR /app
+
+# Copy the compiled binary and environment file
 COPY --from=builder /app/wishlist /app/wishlist
 COPY .env /app/.env
 
+# Expose API port
 EXPOSE 8080
+
+# Run the server
 CMD ["./wishlist"]
