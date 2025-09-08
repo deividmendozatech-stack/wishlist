@@ -1,6 +1,6 @@
 // @title Wishlist API
 // @version 1.0
-// @description API para gestionar listas de deseos de libros
+// @description API para gestionar usuarios, wishlists y libros
 // @host localhost:8080
 // @BasePath /api
 
@@ -12,6 +12,7 @@ import (
 	"os"
 
 	_ "github.com/deividmendozatech-stack/wishlist/docs" // swagger embed files
+	"github.com/deividmendozatech-stack/wishlist/internal/domain"
 	"github.com/deividmendozatech-stack/wishlist/internal/handler"
 	"github.com/deividmendozatech-stack/wishlist/internal/platform/storage"
 	gormrepo "github.com/deividmendozatech-stack/wishlist/internal/repository/gorm"
@@ -21,21 +22,49 @@ import (
 )
 
 func main() {
-	db, err := storage.NewConnection(os.Getenv("DB_PATH"))
+	// Conexión a SQLite
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "wishlist.db"
+	}
+
+	db, err := storage.NewConnection(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	repo := gormrepo.NewWishlistRepo(db)
-	svc := service.NewWishlistService(repo)
-	h := handler.NewHTTPHandler(svc)
+	// Migraciones
+	if err := db.AutoMigrate(&domain.User{}, &domain.Wishlist{}, &domain.Book{}); err != nil {
+		log.Fatal(err)
+	}
 
+	// Repositorios
+	userRepo := gormrepo.NewUserRepo(db)
+	wishlistRepo := gormrepo.NewWishlistRepo(db)
+	bookRepo := gormrepo.NewBookRepo(db)
+
+	// Servicios
+	userSvc := service.NewUserService(userRepo)
+	wishlistSvc := service.NewWishlistService(wishlistRepo)
+	bookSvc := service.NewBookService(bookRepo)
+
+	// Handlers
+	mainHandler := handler.NewHTTPHandler(wishlistSvc, userSvc)
+	bookHandler := handler.NewBookHTTP(bookSvc)
+
+	// Router
 	r := mux.NewRouter()
+
+	// Rutas API
 	api := r.PathPrefix("/api").Subrouter()
-	h.RegisterRoutes(api)
-	//Swagger UI
+	mainHandler.RegisterRoutes(api)
+	bookHandler.RegisterBookRoutes(api)
+
+	// Swagger UI
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	log.Println("Servidor en http://localhost:8080")
-	http.ListenAndServe(":8080", r)
+	log.Println("Servidor iniciado en http://localhost:8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal(err)
+	}
 }

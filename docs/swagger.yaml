@@ -1,17 +1,83 @@
 basePath: /api
 definitions:
+  domain.User:
+    properties:
+      id:
+        type: integer
+      password:
+        description: hash
+        type: string
+      username:
+        type: string
+    type: object
+  handler.AddBookRequest:
+    properties:
+      author:
+        example: Antoine de Saint-Exupéry
+        type: string
+      title:
+        example: El Principito
+        type: string
+    type: object
   handler.CreateWishlistRequest:
     properties:
       name:
+        example: Mi lista de libros
+        type: string
+    type: object
+  handler.RegisterUserRequest:
+    properties:
+      password:
+        example: "1234"
+        type: string
+      username:
+        example: david
         type: string
     type: object
 host: localhost:8080
 info:
   contact: {}
-  description: API para gestionar listas de deseos de libros
+  description: API para gestionar usuarios, wishlists y libros
   title: Wishlist API
   version: "1.0"
 paths:
+  /users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.User'
+            type: array
+      summary: Lista los usuarios registrados
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Registrar nuevo usuario
+      tags:
+      - users
   /wishlist:
     get:
       produces:
@@ -65,4 +131,75 @@ paths:
       summary: Elimina una wishlist por ID
       tags:
       - wishlist
+  /wishlist/{id}/books:
+    get:
+      parameters:
+      - description: ID de la wishlist
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+      summary: Lista los libros de una wishlist
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID de la wishlist
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Datos del libro
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddBookRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Agrega un libro a la wishlist
+      tags:
+      - books
+  /wishlist/{id}/books/{bookID}:
+    delete:
+      parameters:
+      - description: ID de la wishlist
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID del libro
+        in: path
+        name: bookID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Elimina un libro de una wishlist
+      tags:
+      - books
 swagger: "2.0"
