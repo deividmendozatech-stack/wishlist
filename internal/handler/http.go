@@ -10,23 +10,23 @@ import (
 )
 
 //
-// ───────────────────────── MODELOS PARA SWAGGER ─────────────────────────
+// ───────────────────────── MODELS FOR SWAGGER ─────────────────────────
 //
 
-// CreateWishlistRequest representa el body de creación de wishlist
+// CreateWishlistRequest represents the payload to create a wishlist
 type CreateWishlistRequest struct {
-	Name string `json:"name" example:"Mi lista de libros"`
+	Name string `json:"name" example:"My book list"`
 }
 
-// RegisterUserRequest representa el body de registro de usuario
+// RegisterUserRequest represents the payload to register a new user
 type RegisterUserRequest struct {
 	Username string `json:"username" example:"david"`
 	Password string `json:"password" example:"1234"`
 }
 
-// AddBookRequest representa el body para agregar un libro
+// AddBookRequest represents the payload to add a book into a wishlist
 type AddBookRequest struct {
-	Title  string `json:"title"  example:"El Principito"`
+	Title  string `json:"title"  example:"The Little Prince"`
 	Author string `json:"author" example:"Antoine de Saint-Exupéry"`
 }
 
@@ -34,33 +34,36 @@ type AddBookRequest struct {
 // ───────────────────────── HANDLERS ─────────────────────────
 //
 
-// HTTPHandler agrupa endpoints de usuarios y wishlists
+// HTTPHandler groups endpoints related to users and wishlists
 type HTTPHandler struct {
 	wishlist service.WishlistUsecase
 	users    service.UserUsecase
 }
 
-// BookHTTP agrupa endpoints de libros
+// BookHTTP groups endpoints related to books inside wishlists
 type BookHTTP struct {
 	book service.BookUsecase
 }
 
 //
-// ───────────────────────── CONSTRUCTORES ─────────────────────────
+// ───────────────────────── CONSTRUCTORS ─────────────────────────
 //
 
+// NewHTTPHandler builds a handler for wishlist and user endpoints
 func NewHTTPHandler(w service.WishlistUsecase, u service.UserUsecase) *HTTPHandler {
 	return &HTTPHandler{wishlist: w, users: u}
 }
 
+// NewBookHTTP builds a handler for book endpoints
 func NewBookHTTP(b service.BookUsecase) *BookHTTP {
 	return &BookHTTP{book: b}
 }
 
 //
-// ───────────────────────── RUTAS ─────────────────────────
+// ───────────────────────── ROUTES ─────────────────────────
 //
 
+// RegisterRoutes registers main routes for users and wishlists
 func (h *HTTPHandler) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/users/register", h.RegisterUser).Methods(http.MethodPost)
 
@@ -68,9 +71,9 @@ func (h *HTTPHandler) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/wishlist", h.ListWishlists).Methods(http.MethodGet)
 	r.HandleFunc("/wishlist/{id}", h.DeleteWishlist).Methods(http.MethodDelete)
 	r.HandleFunc("/users", h.ListUsers).Methods(http.MethodGet)
-
 }
 
+// RegisterBookRoutes registers routes for book management inside a wishlist
 func (h *BookHTTP) RegisterBookRoutes(r *mux.Router) {
 	r.HandleFunc("/wishlist/{id}/books", h.AddBook).Methods(http.MethodPost)
 	r.HandleFunc("/wishlist/{id}/books", h.ListBooks).Methods(http.MethodGet)
@@ -82,11 +85,11 @@ func (h *BookHTTP) RegisterBookRoutes(r *mux.Router) {
 //
 
 // RegisterUser godoc
-// @Summary Registrar nuevo usuario
+// @Summary Register a new user
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param user body RegisterUserRequest true "Usuario"
+// @Param user body RegisterUserRequest true "User data"
 // @Success 201
 // @Failure 400
 // @Failure 500
@@ -109,11 +112,11 @@ func (h *HTTPHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 //
 
 // CreateWishlist godoc
-// @Summary Crea una nueva wishlist
+// @Summary Create a new wishlist
 // @Tags wishlist
 // @Accept json
 // @Produce json
-// @Param data body CreateWishlistRequest true "Datos de la lista"
+// @Param data body CreateWishlistRequest true "Wishlist data"
 // @Success 201
 // @Failure 400
 // @Router /wishlist [post]
@@ -123,7 +126,7 @@ func (h *HTTPHandler) CreateWishlist(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	userID := uint(1) // en real vendría del token JWT
+	userID := uint(1) // in real scenarios it would come from JWT token
 	if err := h.wishlist.Create(userID, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -132,7 +135,7 @@ func (h *HTTPHandler) CreateWishlist(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListWishlists godoc
-// @Summary Lista las wishlists del usuario
+// @Summary List all wishlists for a user
 // @Tags wishlist
 // @Produce json
 // @Success 200 {array} map[string]interface{}
@@ -149,9 +152,9 @@ func (h *HTTPHandler) ListWishlists(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteWishlist godoc
-// @Summary Elimina una wishlist por ID
+// @Summary Delete a wishlist by ID
 // @Tags wishlist
-// @Param id path int true "ID de la wishlist"
+// @Param id path int true "Wishlist ID"
 // @Success 204
 // @Failure 400
 // @Failure 500
@@ -176,12 +179,12 @@ func (h *HTTPHandler) DeleteWishlist(w http.ResponseWriter, r *http.Request) {
 //
 
 // AddBook godoc
-// @Summary Agrega un libro a la wishlist
+// @Summary Add a book to the wishlist
 // @Tags books
 // @Accept json
 // @Produce json
-// @Param id path int true "ID de la wishlist"
-// @Param data body AddBookRequest true "Datos del libro"
+// @Param id path int true "Wishlist ID"
+// @Param data body AddBookRequest true "Book data"
 // @Success 201
 // @Failure 400
 // @Failure 500
@@ -208,10 +211,10 @@ func (h *BookHTTP) AddBook(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListBooks godoc
-// @Summary Lista los libros de una wishlist
+// @Summary List all books from a wishlist
 // @Tags books
 // @Produce json
-// @Param id path int true "ID de la wishlist"
+// @Param id path int true "Wishlist ID"
 // @Success 200 {array} map[string]interface{}
 // @Router /wishlist/{id}/books [get]
 func (h *BookHTTP) ListBooks(w http.ResponseWriter, r *http.Request) {
@@ -232,10 +235,10 @@ func (h *BookHTTP) ListBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteBook godoc
-// @Summary Elimina un libro de una wishlist
+// @Summary Remove a book from a wishlist
 // @Tags books
-// @Param id path int true "ID de la wishlist"
-// @Param bookID path int true "ID del libro"
+// @Param id path int true "Wishlist ID"
+// @Param bookID path int true "Book ID"
 // @Success 204
 // @Failure 400
 // @Failure 500
@@ -261,7 +264,7 @@ func (h *BookHTTP) DeleteBook(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListUsers godoc
-// @Summary Lista los usuarios registrados
+// @Summary List registered users
 // @Tags users
 // @Produce json
 // @Success 200 {array} domain.User
@@ -276,25 +279,30 @@ func (h *HTTPHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// GoogleBooksHTTP maneja las búsquedas externas en Google Books
+//
+// ───────────────────────── GOOGLE BOOKS ─────────────────────────
+//
+
+// GoogleBooksHTTP handles external Google Books searches
 type GoogleBooksHTTP struct {
 	api service.GoogleBooksUsecase
 }
 
+// NewGoogleBooksHTTP builds the Google Books handler
 func NewGoogleBooksHTTP(api service.GoogleBooksUsecase) *GoogleBooksHTTP {
 	return &GoogleBooksHTTP{api: api}
 }
 
-// RegisterGoogleRoutes registra la ruta GET /books/search
+// RegisterGoogleRoutes registers GET /books/search
 func (h *GoogleBooksHTTP) RegisterGoogleRoutes(r *mux.Router) {
 	r.HandleFunc("/books/search", h.SearchBooks).Methods(http.MethodGet)
 }
 
 // SearchBooks godoc
-// @Summary Busca libros en Google Books
+// @Summary Search books using Google Books API
 // @Tags books
 // @Produce json
-// @Param q query string true "Término de búsqueda"
+// @Param q query string true "Search term"
 // @Success 200 {array} service.GoogleBook
 // @Failure 400
 // @Failure 500

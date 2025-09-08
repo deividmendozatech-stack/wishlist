@@ -10,14 +10,17 @@ type bookGorm struct {
 	db *gorm.DB
 }
 
+// NewBookRepo returns a GORM-based BookRepository.
 func NewBookRepo(db *gorm.DB) repository.BookRepository {
 	return &bookGorm{db: db}
 }
 
+// Create inserts a new book.
 func (r *bookGorm) Create(b *domain.Book) error {
 	return r.db.Create(b).Error
 }
 
+// ListByWishlist fetches books for a wishlist.
 func (r *bookGorm) ListByWishlist(wishlistID uint) ([]domain.Book, error) {
 	var books []domain.Book
 	if err := r.db.Where("wishlist_id = ?", wishlistID).Find(&books).Error; err != nil {
@@ -26,6 +29,7 @@ func (r *bookGorm) ListByWishlist(wishlistID uint) ([]domain.Book, error) {
 	return books, nil
 }
 
+// Delete removes a book by wishlist and book ID.
 func (r *bookGorm) Delete(wishlistID, bookID uint) error {
 	return r.db.Where("wishlist_id = ? AND id = ?", wishlistID, bookID).
 		Delete(&domain.Book{}).Error

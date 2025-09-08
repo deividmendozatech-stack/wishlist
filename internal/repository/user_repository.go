@@ -5,29 +5,29 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserRepository define los métodos de persistencia de usuarios
+// UserRepository defines the contract for user persistence.
 type UserRepository interface {
 	Create(*domain.User) error
 	FindByUsername(username string) (*domain.User, error)
 	FindAll() ([]domain.User, error)
 }
 
-// userRepo implementa UserRepository
+// userRepo is a GORM-based implementation of UserRepository.
 type userRepo struct {
 	db *gorm.DB
 }
 
-// NewUserRepo crea un nuevo repositorio
+// NewUserRepo returns a GORM-backed UserRepository.
 func NewUserRepo(db *gorm.DB) UserRepository {
 	return &userRepo{db: db}
 }
 
-// Create inserta un usuario nuevo
+// Create saves a new user record.
 func (r *userRepo) Create(u *domain.User) error {
 	return r.db.Create(u).Error
 }
 
-// FindByUsername busca un usuario por username
+// FindByUsername retrieves a user by username.
 func (r *userRepo) FindByUsername(username string) (*domain.User, error) {
 	var user domain.User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
@@ -36,7 +36,7 @@ func (r *userRepo) FindByUsername(username string) (*domain.User, error) {
 	return &user, nil
 }
 
-// FindAll retorna todos los usuarios
+// FindAll returns all stored users.
 func (r *userRepo) FindAll() ([]domain.User, error) {
 	var users []domain.User
 	if err := r.db.Find(&users).Error; err != nil {

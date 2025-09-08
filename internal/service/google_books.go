@@ -6,24 +6,26 @@ import (
 	"net/http"
 )
 
-// GoogleBook es el modelo simplificado que devolverá tu API
+// GoogleBook represents a simplified book model returned by the API.
 type GoogleBook struct {
 	Title  string   `json:"title"`
 	Author []string `json:"author"`
 }
 
-// GoogleBooksUsecase define la interfaz
+// GoogleBooksUsecase defines book search operations via Google Books.
 type GoogleBooksUsecase interface {
 	Search(query string) ([]GoogleBook, error)
 }
 
+// googleBooksService implements GoogleBooksUsecase.
 type googleBooksService struct{}
 
+// NewGoogleBooksService creates a GoogleBooksUsecase instance.
 func NewGoogleBooksService() GoogleBooksUsecase {
 	return &googleBooksService{}
 }
 
-// Search consulta la API de Google Books
+// Search queries the Google Books API and returns simplified results.
 func (s *googleBooksService) Search(query string) ([]GoogleBook, error) {
 	url := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?q=%s", query)
 	resp, err := http.Get(url)

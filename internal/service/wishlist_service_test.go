@@ -10,20 +10,17 @@ import (
 	"github.com/deividmendozatech-stack/wishlist/internal/service"
 )
 
-// mockRepo implementa repository.WishlistRepository
+// mockRepo is a simple mock of WishlistRepository.
 type mockRepo struct{ mock.Mock }
 
-func (m *mockRepo) Create(w *domain.Wishlist) error {
-	return m.Called(w).Error(0)
-}
+func (m *mockRepo) Create(w *domain.Wishlist) error { return m.Called(w).Error(0) }
 func (m *mockRepo) FindByUser(userID uint) ([]domain.Wishlist, error) {
 	args := m.Called(userID)
 	return args.Get(0).([]domain.Wishlist), args.Error(1)
 }
-func (m *mockRepo) Delete(userID, id uint) error {
-	return m.Called(userID, id).Error(0)
-}
+func (m *mockRepo) Delete(userID, id uint) error { return m.Called(userID, id).Error(0) }
 
+// TestCreateWishlist ensures Create stores a wishlist without error.
 func TestCreateWishlist(t *testing.T) {
 	mr := new(mockRepo)
 	svc := service.NewWishlistService(mr)
@@ -35,6 +32,7 @@ func TestCreateWishlist(t *testing.T) {
 	mr.AssertExpectations(t)
 }
 
+// TestListWishlist verifies List returns all wishlists for a user.
 func TestListWishlist(t *testing.T) {
 	mr := new(mockRepo)
 	svc := service.NewWishlistService(mr)
@@ -53,6 +51,7 @@ func TestListWishlist(t *testing.T) {
 	mr.AssertExpectations(t)
 }
 
+// TestDeleteWishlist checks Delete removes a wishlist without error.
 func TestDeleteWishlist(t *testing.T) {
 	mr := new(mockRepo)
 	svc := service.NewWishlistService(mr)
