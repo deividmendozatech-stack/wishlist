@@ -23,8 +23,8 @@ go mod tidy
 go run cmd/server/main.go
 
 Por defecto el servidor expone:
-http://localhost:8080/api
-http://localhost:8080/swagger/index.html
+API: http://localhost:8080/api
+Swagger UI: http://localhost:8080/swagger/index.html
 
 🐳 Ejecutar con Docker:
 docker build -t wishlist-api .
@@ -35,15 +35,17 @@ Una vez en ejecución, abre en el navegador:
 http://localhost:8080/swagger/index.html
 
 🔑 Endpoints principales:
-| Método | Ruta                                | Descripción                  |
-| ------ | ----------------------------------- | ---------------------------- |
-| POST   | `/api/users/register`               | Registrar usuario            |
-| POST   | `/api/wishlist`                     | Crear wishlist               |
-| GET    | `/api/wishlist`                     | Listar wishlists del usuario |
-| DELETE | `/api/wishlist/{id}`                | Eliminar wishlist            |
-| POST   | `/api/wishlist/{id}/books`          | Agregar libro a wishlist     |
-| GET    | `/api/wishlist/{id}/books`          | Listar libros de wishlist    |
-| DELETE | `/api/wishlist/{id}/books/{bookID}` | Eliminar libro               |
+| Método | Ruta                                | Descripción                   |
+| ------ | ----------------------------------- | ----------------------------- |
+| POST   | `/api/users/register`               | Registrar usuario             |
+| POST   | `/api/wishlist`                     | Crear wishlist                |
+| GET    | `/api/wishlist`                     | Listar wishlists del usuario  |
+| DELETE | `/api/wishlist/{id}`                | Eliminar wishlist             |
+| POST   | `/api/wishlist/{id}/books`          | Agregar libro a wishlist      |
+| GET    | `/api/wishlist/{id}/books`          | Listar libros de wishlist     |
+| DELETE | `/api/wishlist/{id}/books/{bookID}` | Eliminar libro                |
+| GET    | `/api/books/search?q=<query>`       | Buscar libros en Google Books |
+
 
 📦 Ejemplos de Requests y Responses:
 | Operación         | Request (JSON)                                | Response (JSON)                               |
@@ -55,6 +57,9 @@ http://localhost:8080/swagger/index.html
 | Agregar libro     | `{ "title": "Go 101", "author": "Anon" }`     | `201 Created`                                 |
 | Listar libros     | *N/A* (GET)                                   | `[{"id":1,"title":"Go 101","author":"Anon"}]` |
 | Eliminar libro    | *N/A* (DELETE)                                | `204 No Content`                              |
+| Operación          | Request (HTTP)                         | Response (JSON)                                             |
+| ------------------ | --------------------------------------- | ----------------------------------------------------------- |
+| Buscar libros (Google Books) | `GET /api/books/search?q=golang`           | `[{"title":"The Go Programming Language","author":["Alan Donovan","Brian Kernighan"]},{"title":"Go in Action","author":["William Kennedy"]}]` |
 
 
 🧪 Ejecutar tests:
@@ -87,6 +92,46 @@ git commit -m "Descripción breve de los cambios"
 
 # Subir a la rama principal en GitHub
 git push origin main
+
+🔎 Búsqueda de libros en Google Books:
+La API permite consultar el catálogo público de Google Books y devolver resultados con título y autores.
+
+📡 Endpoint
+| Método | Ruta                | Descripción                       |
+| ------ | ------------------- | --------------------------------- |
+| GET    | `/api/books/search` | Buscar libros usando Google Books |
+
+📥 Parámetros de consulta
+| Nombre | Tipo   | Obligatorio | Descripción                                |
+| ------ | ------ | ----------- | ------------------------------------------ |
+| `q`    | string | Sí          | Término de búsqueda (por ejemplo `golang`) |
+
+📤 Ejemplo de petición
+curl "http://localhost:8080/api/books/search?q=golang"
+
+📄 Respuesta (200)
+[
+  {
+    "title": "The Go Programming Language",
+    "author": ["Alan Donovan", "Brian Kernighan"]
+  },
+  {
+    "title": "Go in Action",
+    "author": ["William Kennedy"]
+  }
+]
+
+❌ Errores
+| Código | Mensaje                   | Motivo                                                 |
+| ------ | ------------------------- | ------------------------------------------------------ |
+| 400    | `"missing query param q"` | Falta el parámetro `q` en la consulta                  |
+| 500    | `"error ..."`             | Fallo al conectar o procesar respuesta de Google Books |
+
+## 📷 Vista en Swagger
+
+A continuación se muestra cómo se visualiza el endpoint **`/api/books/search`** en Swagger UI:
+
+![Swagger Google Books](docs/images/swagger-googlebooks.png)
 
 
 ✍️ Autor

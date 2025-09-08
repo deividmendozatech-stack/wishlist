@@ -275,3 +275,42 @@ func (h *HTTPHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
+
+// GoogleBooksHTTP maneja las búsquedas externas en Google Books
+type GoogleBooksHTTP struct {
+	api service.GoogleBooksUsecase
+}
+
+func NewGoogleBooksHTTP(api service.GoogleBooksUsecase) *GoogleBooksHTTP {
+	return &GoogleBooksHTTP{api: api}
+}
+
+// RegisterGoogleRoutes registra la ruta GET /books/search
+func (h *GoogleBooksHTTP) RegisterGoogleRoutes(r *mux.Router) {
+	r.HandleFunc("/books/search", h.SearchBooks).Methods(http.MethodGet)
+}
+
+// SearchBooks godoc
+// @Summary Busca libros en Google Books
+// @Tags books
+// @Produce json
+// @Param q query string true "Término de búsqueda"
+// @Success 200 {array} service.GoogleBook
+// @Failure 400
+// @Failure 500
+// @Router /books/search [get]
+func (h *GoogleBooksHTTP) SearchBooks(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "missing query param q", http.StatusBadRequest)
+		return
+	}
+
+	results, err := h.api.Search(query)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}

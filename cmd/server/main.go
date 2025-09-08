@@ -60,6 +60,10 @@ func main() {
 	mainHandler.RegisterRoutes(api)
 	bookHandler.RegisterBookRoutes(api)
 
+	googleSvc := service.NewGoogleBooksService()
+	googleHandler := handler.NewGoogleBooksHTTP(googleSvc)
+	googleHandler.RegisterGoogleRoutes(api)
+
 	// Swagger UI
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 

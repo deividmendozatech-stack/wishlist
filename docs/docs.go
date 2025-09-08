@@ -15,6 +15,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/books/search": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "books"
+                ],
+                "summary": "Busca libros en Google Books",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Término de búsqueda",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.GoogleBook"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "produces": [
@@ -312,6 +349,20 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "david"
+                }
+            }
+        },
+        "service.GoogleBook": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         }

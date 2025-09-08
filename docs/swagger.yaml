@@ -34,6 +34,15 @@ definitions:
         example: david
         type: string
     type: object
+  service.GoogleBook:
+    properties:
+      author:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -41,6 +50,30 @@ info:
   title: Wishlist API
   version: "1.0"
 paths:
+  /books/search:
+    get:
+      parameters:
+      - description: Término de búsqueda
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.GoogleBook'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Busca libros en Google Books
+      tags:
+      - books
   /users:
     get:
       produces:
