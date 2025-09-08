@@ -130,7 +130,7 @@ curl "http://localhost:8080/api/books/search?q=golang"
 
 📷 Vista en Swagger:
 A continuación se muestra cómo se visualiza el endpoint **`/api/books/search`** en Swagger UI:
-![Swagger Google Books](docs/images/swagger-googlebooks.png)
+![Swagger Google Books](docs/images/Swagger.png)
 
 
 ✍️ Autor
