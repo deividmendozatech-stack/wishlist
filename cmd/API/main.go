@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Connect to SQLite database
-	db, err := storage.NewConnection(dbPath)
+	db, err := storage.InitDB(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
