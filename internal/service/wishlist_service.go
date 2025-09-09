@@ -1,39 +1,29 @@
 package service
 
-import (
-	"github.com/deividmendozatech-stack/wishlist/internal/domain"
-	"github.com/deividmendozatech-stack/wishlist/internal/repository"
-)
-
-// WishlistUsecase defines core wishlist operations.
-type WishlistUsecase interface {
-	Create(userID uint, name string) error
-	List(userID uint) ([]domain.Wishlist, error)
-	Delete(userID, id uint) error
+// wishlistService is the concrete implementation of the WishlistUsecase interface.
+// It contains the business logic for managing user wishlists.
+type wishlistService struct {
+	repo WishlistRepository
 }
 
-// WishlistService implements WishlistUsecase.
-type WishlistService struct {
-	repo repository.WishlistRepository
-}
-
-// NewWishlistService returns a WishlistService using the provided repository.
-func NewWishlistService(r repository.WishlistRepository) *WishlistService {
-	return &WishlistService{repo: r}
+// NewWishlistService creates a new instance of wishlistService.
+// It requires a WishlistRepository to handle persistence.
+func NewWishlistService(r WishlistRepository) WishlistUsecase {
+	return &wishlistService{repo: r}
 }
 
 // Create adds a new wishlist for the given user.
-func (s *WishlistService) Create(userID uint, name string) error {
-	wl := &domain.Wishlist{UserID: userID, Name: name}
-	return s.repo.Create(wl)
+func (s *wishlistService) Create(userID uint, name string) error {
+	w := &Wishlist{UserID: userID, Name: name}
+	return s.repo.Add(w)
 }
 
-// List fetches all wishlists for a user.
-func (s *WishlistService) List(userID uint) ([]domain.Wishlist, error) {
-	return s.repo.FindByUser(userID)
+// List retrieves all wishlists that belong to the given user.
+func (s *wishlistService) List(userID uint) ([]Wishlist, error) {
+	return s.repo.List(userID)
 }
 
-// Delete removes a wishlist by user and ID.
-func (s *WishlistService) Delete(userID, id uint) error {
-	return s.repo.Delete(userID, id)
+// Delete removes a wishlist by its ID, ensuring it belongs to the given user.
+func (s *wishlistService) Delete(userID, wishlistID uint) error {
+	return s.repo.Delete(userID, wishlistID)
 }

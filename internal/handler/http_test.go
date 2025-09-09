@@ -7,8 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/deividmendozatech-stack/wishlist/internal/domain"
-	svc "github.com/deividmendozatech-stack/wishlist/internal/service"
+	"github.com/deividmendozatech-stack/wishlist/internal/service"
 	"github.com/gorilla/mux"
 )
 
@@ -16,35 +15,35 @@ import (
 // ──────────────── MOCKS ────────────────
 //
 
-// mockWishlist implements WishlistUsecase for testing.
+// mockWishlist is a mock implementation of WishlistUsecase for testing purposes.
 type mockWishlist struct{}
 
-var _ svc.WishlistUsecase = (*mockWishlist)(nil)
+var _ service.WishlistUsecase = (*mockWishlist)(nil)
 
 func (m *mockWishlist) Create(userID uint, name string) error { return nil }
-func (m *mockWishlist) List(userID uint) ([]domain.Wishlist, error) {
-	return []domain.Wishlist{{ID: 1, UserID: userID, Name: "TestList"}}, nil
+func (m *mockWishlist) List(userID uint) ([]service.Wishlist, error) {
+	return []service.Wishlist{{ID: 1, UserID: userID, Name: "TestList"}}, nil
 }
 func (m *mockWishlist) Delete(userID, id uint) error { return nil }
 
-// mockUser implements UserUsecase for testing.
+// mockUser is a mock implementation of UserUsecase for testing purposes.
 type mockUser struct{}
 
-var _ svc.UserUsecase = (*mockUser)(nil)
+var _ service.UserUsecase = (*mockUser)(nil)
 
 func (m *mockUser) Register(username, password string) error { return nil }
-func (m *mockUser) List() ([]domain.User, error) {
-	return []domain.User{{ID: 1, Username: "david"}}, nil
+func (m *mockUser) List() ([]service.User, error) {
+	return []service.User{{ID: 1, Username: "david"}}, nil
 }
 
-// mockBook implements BookUsecase for testing.
+// mockBook is a mock implementation of BookUsecase for testing purposes.
 type mockBook struct{}
 
-var _ svc.BookUsecase = (*mockBook)(nil)
+var _ service.BookUsecase = (*mockBook)(nil)
 
 func (m *mockBook) Add(wishlistID uint, title, author string) error { return nil }
-func (m *mockBook) List(wishlistID uint) ([]domain.Book, error) {
-	return []domain.Book{{ID: 1, WishlistID: wishlistID, Title: "BookTest", Author: "Anon"}}, nil
+func (m *mockBook) List(wishlistID uint) ([]service.Book, error) {
+	return []service.Book{{ID: 1, WishlistID: wishlistID, Title: "BookTest", Author: "Anon"}}, nil
 }
 func (m *mockBook) Delete(wishlistID, bookID uint) error { return nil }
 
@@ -52,7 +51,8 @@ func (m *mockBook) Delete(wishlistID, bookID uint) error { return nil }
 // ──────────────── HELPERS ────────────────
 //
 
-// setupRouter builds a router with mock services.
+// setupRouter builds a test HTTP router with mock services.
+// It registers the same routes as in main.go but uses mock implementations.
 func setupRouter() *mux.Router {
 	wSvc := &mockWishlist{}
 	uSvc := &mockUser{}
@@ -62,8 +62,18 @@ func setupRouter() *mux.Router {
 	bookHandler := NewBookHTTP(bSvc)
 
 	r := mux.NewRouter()
-	mainHandler.RegisterRoutes(r)
-	bookHandler.RegisterBookRoutes(r)
+	api := r.PathPrefix("/api").Subrouter()
+
+	// Same routes defined in main.go
+	api.HandleFunc("/users/register", mainHandler.RegisterUser).Methods(http.MethodPost)
+	api.HandleFunc("/users", mainHandler.ListUsers).Methods(http.MethodGet)
+	api.HandleFunc("/wishlist", mainHandler.CreateWishlist).Methods(http.MethodPost)
+	api.HandleFunc("/wishlist", mainHandler.ListWishlists).Methods(http.MethodGet)
+	api.HandleFunc("/wishlist/{id}", mainHandler.DeleteWishlist).Methods(http.MethodDelete)
+
+	api.HandleFunc("/wishlist/{id}/books", bookHandler.AddBook).Methods(http.MethodPost)
+	api.HandleFunc("/wishlist/{id}/books", bookHandler.ListBooks).Methods(http.MethodGet)
+	api.HandleFunc("/wishlist/{id}/books/{bookID}", bookHandler.DeleteBook).Methods(http.MethodDelete)
 
 	return r
 }
@@ -72,13 +82,14 @@ func setupRouter() *mux.Router {
 // ──────────────── TESTS ────────────────
 //
 
-// TestEndpoints checks basic user, wishlist, and book routes.
+// TestEndpoints validates core API routes for users, wishlists, and books
+// using mocked services instead of a real database.
 func TestEndpoints(t *testing.T) {
 	router := setupRouter()
 
 	// USER REGISTER
 	bodyUser, _ := json.Marshal(RegisterUserRequest{Username: "david", Password: "1234"})
-	req := httptest.NewRequest(http.MethodPost, "/users/register", bytes.NewBuffer(bodyUser))
+	req := httptest.NewRequest(http.MethodPost, "/api/users/register", bytes.NewBuffer(bodyUser))
 	req.Header.Set("Content-Type", "application/json")
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -88,7 +99,7 @@ func TestEndpoints(t *testing.T) {
 
 	// CREATE WISHLIST
 	bodyWL, _ := json.Marshal(CreateWishlistRequest{Name: "MyList"})
-	req = httptest.NewRequest(http.MethodPost, "/wishlist", bytes.NewBuffer(bodyWL))
+	req = httptest.NewRequest(http.MethodPost, "/api/wishlist", bytes.NewBuffer(bodyWL))
 	req.Header.Set("Content-Type", "application/json")
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -97,7 +108,7 @@ func TestEndpoints(t *testing.T) {
 	}
 
 	// LIST WISHLIST
-	req = httptest.NewRequest(http.MethodGet, "/wishlist", nil)
+	req = httptest.NewRequest(http.MethodGet, "/api/wishlist", nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	if resp.Code != http.StatusOK {
@@ -106,7 +117,7 @@ func TestEndpoints(t *testing.T) {
 
 	// ADD BOOK
 	bookPayload := `{"title":"Go 101","author":"Unknown"}`
-	req = httptest.NewRequest(http.MethodPost, "/wishlist/1/books", bytes.NewBufferString(bookPayload))
+	req = httptest.NewRequest(http.MethodPost, "/api/wishlist/1/books", bytes.NewBufferString(bookPayload))
 	req.Header.Set("Content-Type", "application/json")
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -115,7 +126,7 @@ func TestEndpoints(t *testing.T) {
 	}
 
 	// LIST BOOKS
-	req = httptest.NewRequest(http.MethodGet, "/wishlist/1/books", nil)
+	req = httptest.NewRequest(http.MethodGet, "/api/wishlist/1/books", nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	if resp.Code != http.StatusOK {
@@ -123,7 +134,7 @@ func TestEndpoints(t *testing.T) {
 	}
 
 	// LIST USERS
-	req = httptest.NewRequest(http.MethodGet, "/users", nil)
+	req = httptest.NewRequest(http.MethodGet, "/api/users", nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	if resp.Code != http.StatusOK {

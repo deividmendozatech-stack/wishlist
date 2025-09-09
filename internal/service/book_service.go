@@ -1,43 +1,32 @@
 package service
 
-import (
-	"github.com/deividmendozatech-stack/wishlist/internal/domain"
-	"github.com/deividmendozatech-stack/wishlist/internal/repository"
-)
+//
+// ─────────────────────────── SERVICE IMPLEMENTATION ───────────────────────────
+//
 
-// BookUsecase defines book-related business operations.
-type BookUsecase interface {
-	Add(wishlistID uint, title, author string) error
-	List(wishlistID uint) ([]domain.Book, error)
-	Delete(wishlistID, bookID uint) error
-}
-
-// bookService implements BookUsecase using a BookRepository.
+// bookService implements the BookUsecase interface.
+// It contains the business logic for managing books inside wishlists.
 type bookService struct {
-	repo repository.BookRepository
+	repo BookRepository
 }
 
-// NewBookService creates a BookUsecase with the given repository.
-func NewBookService(r repository.BookRepository) BookUsecase {
+// NewBookService creates a new instance of bookService with the provided repository.
+func NewBookService(r BookRepository) BookUsecase {
 	return &bookService{repo: r}
 }
 
-// Add creates a new book linked to a wishlist.
+// Add creates and stores a new book in the given wishlist.
 func (s *bookService) Add(wishlistID uint, title, author string) error {
-	book := &domain.Book{
-		Title:      title,
-		Author:     author,
-		WishlistID: wishlistID,
-	}
-	return s.repo.Create(book)
+	book := Book{WishlistID: wishlistID, Title: title, Author: author}
+	return s.repo.Add(&book)
 }
 
-// List retrieves all books for a wishlist.
-func (s *bookService) List(wishlistID uint) ([]domain.Book, error) {
-	return s.repo.ListByWishlist(wishlistID)
+// List retrieves all books associated with a given wishlist ID.
+func (s *bookService) List(wishlistID uint) ([]Book, error) {
+	return s.repo.List(wishlistID)
 }
 
-// Delete removes a book from a wishlist.
+// Delete removes a book from the repository using its wishlist ID and book ID.
 func (s *bookService) Delete(wishlistID, bookID uint) error {
 	return s.repo.Delete(wishlistID, bookID)
 }

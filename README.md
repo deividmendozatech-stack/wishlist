@@ -2,114 +2,119 @@
 
 # 📚 Wishlist API
 
-API REST escrita en **Go 1.25** para gestionar listas de deseos de libros.  
-Incluye **SQLite + GORM** para persistencia, autenticación con **JWT** (en progreso), documentación con **Swagger** y **Dockerfile** para despliegue sencillo.
+REST API written in **Go 1.25** to manage book wishlists.  
+It includes **SQLite + GORM** for persistence, authentication with **JWT** (in progress), documentation with **Swagger**, and a **Dockerfile** for simple deployment.
 
-Repositorio: [https://github.com/deividmendozatech-stack/wishlist](https://github.com/deividmendozatech-stack/wishlist)
+Repository: [https://github.com/deividmendozatech-stack/wishlist](https://github.com/deividmendozatech-stack/wishlist)
 
 ---
 
-## 🚀 Ejecutar en local
+## 🚀 Run locally
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/deividmendozatech-stack/wishlist.git
 cd wishlist
 
-# Instalar dependencias
+# Install dependencies
 go mod tidy
 
-# Ejecutar el servidor
-go run cmd/server/main.go
+# Run the server
+go run cmd/API/main.go
 
-Por defecto el servidor expone:
+By default the server exposes:
 API: http://localhost:8080/api
 Swagger UI: http://localhost:8080/swagger/index.html
 
-🐳 Ejecutar con Docker:
+🐳 Run with Docker:
 docker build -t wishlist-api .
 docker run -p 8080:8080 wishlist-api
 
-📖 Documentación Swagger:
-Una vez en ejecución, abre en el navegador:
+📖 Swagger Documentation:
+Once running, open in your browser:
 http://localhost:8080/swagger/index.html
 
-🔑 Endpoints principales:
-| Método | Ruta                                | Descripción                   |
-| ------ | ----------------------------------- | ----------------------------- |
-| POST   | `/api/users/register`               | Registrar usuario             |
-| POST   | `/api/wishlist`                     | Crear wishlist                |
-| GET    | `/api/wishlist`                     | Listar wishlists del usuario  |
-| DELETE | `/api/wishlist/{id}`                | Eliminar wishlist             |
-| POST   | `/api/wishlist/{id}/books`          | Agregar libro a wishlist      |
-| GET    | `/api/wishlist/{id}/books`          | Listar libros de wishlist     |
-| DELETE | `/api/wishlist/{id}/books/{bookID}` | Eliminar libro                |
-| GET    | `/api/books/search?q=<query>`       | Buscar libros en Google Books |
+🔑 Main Endpoints:
+| Method | Path                                | Description               |
+| ------ | ----------------------------------- | ------------------------- |
+| POST   | `/api/users/register`               | Register a user           |
+| GET    | `/api/users`                        | List registered users     |
+| POST   | `/api/wishlist`                     | Create wishlist           |
+| GET    | `/api/wishlist`                     | List user wishlists       |
+| DELETE | `/api/wishlist/{id}`                | Delete wishlist           |
+| POST   | `/api/wishlist/{id}/books`          | Add book to wishlist      |
+| GET    | `/api/wishlist/{id}/books`          | List wishlist books       |
+| DELETE | `/api/wishlist/{id}/books/{bookID}` | Remove book from wishlist |
+| GET    | `/api/books/search?q=<query>`       | Search books (Google API) |
 
 
-📦 Ejemplos de Requests y Responses:
-| Operación         | Request (JSON)                                | Response (JSON)                               |
-| ----------------- | --------------------------------------------- | --------------------------------------------- |
-| Registrar usuario | `{ "username": "david", "password": "1234" }` | `201 Created`                                 |
-| Crear wishlist    | `{ "name": "Libros pendientes" }`             | `201 Created`                                 |
-| Listar wishlists  | *N/A* (GET)                                   | `[{"id":1,"name":"Libros pendientes"}]`       |
-| Eliminar wishlist | *N/A* (DELETE)                                | `204 No Content`                              |
-| Agregar libro     | `{ "title": "Go 101", "author": "Anon" }`     | `201 Created`                                 |
-| Listar libros     | *N/A* (GET)                                   | `[{"id":1,"title":"Go 101","author":"Anon"}]` |
-| Eliminar libro    | *N/A* (DELETE)                                | `204 No Content`                              |
-| Operación          | Request (HTTP)                         | Response (JSON)                                             |
-| ------------------ | --------------------------------------- | ----------------------------------------------------------- |
-| Buscar libros (Google Books) | `GET /api/books/search?q=golang`           | `[{"title":"The Go Programming Language","author":["Alan Donovan","Brian Kernighan"]},{"title":"Go in Action","author":["William Kennedy"]}]` |
+
+📦 Request/Response Examples:
+| Operation       | Request (JSON)                                | Response (JSON)                                                                                                                               |
+| --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Register user   | `{ "username": "david", "password": "1234" }` | `201 Created`                                                                                                                                 |
+| Create wishlist | `{ "name": "Pending Books" }`                 | `201 Created`                                                                                                                                 |
+| List wishlists  | *N/A* (GET)                                   | `[{"id":1,"name":"Pending Books"}]`                                                                                                           |
+| Delete wishlist | *N/A* (DELETE)                                | `204 No Content`                                                                                                                              |
+| Add book        | `{ "title": "Go 101", "author": "Anon" }`     | `201 Created`                                                                                                                                 |
+| List books      | *N/A* (GET)                                   | `[{"id":1,"title":"Go 101","author":"Anon"}]`                                                                                                 |
+| Delete book     | *N/A* (DELETE)                                | `204 No Content`                                                                                                                              |
+| Search books    | `GET /api/books/search?q=golang`              | `[{"title":"The Go Programming Language","author":["Alan Donovan","Brian Kernighan"]},{"title":"Go in Action","author":["William Kennedy"]}]` |
 
 
-🧪 Ejecutar tests:
+
+🧪 Run Tests
 go test ./... -v
-Tests unitarios incluidos para handlers, services y repositories con mocks simples.
+Unit tests included for handlers, services, and repositories with simple mocks.
 
-📂 Estructura básica:
-cmd/server         # main.go, punto de entrada
-internal/domain    # modelos: User, Wishlist, Book
-internal/handler   # HTTP handlers y rutas
-internal/service   # lógica de negocio
-internal/repository/gorm # repositorios con GORM
-internal/platform/storage # conexión SQLite
-pkg/auth           # helpers JWT (futuro)
-docs               # archivos swagger
+Coverage example:
+Storage Layer: ~70%
+Services: ~50%
+Handlers: ~37%
+
+📂 Project Structure:
+cmd/API           # main.go, entry point
+internal/handler  # HTTP handlers and routes
+internal/service  # business logic, Models
+internal/storage  # repositories (SQLite + GORM)
+pkg/auth          # JWT helpers (in progress)
+docs              # Swagger auto-generated files
+
 
 ✅ CI/CD:
-GitHub Actions ejecuta "go test ./..." en cada push a main.
-Badge de estado visible arriba del README.
+GitHub Actions runs go test ./... on every push to main.
+Build status is visible in the badge above.
 
-🔄 Guardar y subir cambios a GitHub:
-# Ver qué archivos cambiaron
+🔄 Save and push changes to GitHub:
+# Check which files were modified
 git status
 
-# Añadir cambios al área de preparación
+# Add changes to the staging area
 git add .
 
-# Confirmar con un mensaje descriptivo
-git commit -m "Descripción breve de los cambios"
+# Commit with a descriptive message
+git commit -m "Brief description of changes"
 
-# Subir a la rama principal en GitHub
+# Push to the main branch on GitHub
 git push origin main
 
-🔎 Búsqueda de libros en Google Books:
-La API permite consultar el catálogo público de Google Books y devolver resultados con título y autores.
+🔎 Google Books Search
+The API integrates with Google Books API to fetch public book data.
 
 📡 Endpoint
-| Método | Ruta                | Descripción                       |
-| ------ | ------------------- | --------------------------------- |
-| GET    | `/api/books/search` | Buscar libros usando Google Books |
+| Method | Path                | Description                     |
+| ------ | ------------------- | ------------------------------- |
+| GET    | `/api/books/search` | Search books using Google Books |
 
-📥 Parámetros de consulta
-| Nombre | Tipo   | Obligatorio | Descripción                                |
-| ------ | ------ | ----------- | ------------------------------------------ |
-| `q`    | string | Sí          | Término de búsqueda (por ejemplo `golang`) |
+📥 Query Parameters
+| Name | Type   | Required | Description                 |
+| ---- | ------ | -------- | --------------------------- |
+| `q`  | string | Yes      | Search term (e.g. `golang`) |
 
-📤 Ejemplo de petición
+📤 Example Request
 curl "http://localhost:8080/api/books/search?q=golang"
 
-📄 Respuesta (200)
+📄 Response (200)
 [
   {
     "title": "The Go Programming Language",
@@ -121,15 +126,16 @@ curl "http://localhost:8080/api/books/search?q=golang"
   }
 ]
 
-❌ Errores
-| Código | Mensaje                   | Motivo                                                 |
-| ------ | ------------------------- | ------------------------------------------------------ |
-| 400    | `"missing query param q"` | Falta el parámetro `q` en la consulta                  |
-| 500    | `"error ..."`             | Fallo al conectar o procesar respuesta de Google Books |
+❌ Errors
+| Code | Message                   | Reason                                                  |
+| ---- | ------------------------- | ------------------------------------------------------- |
+| 400  | `"missing query param q"` | Missing search parameter `q`                            |
+| 500  | `"error ..."`             | Failure to connect or process Google Books API response |
 
 
-📷 Vista en Swagger:
-A continuación se muestra cómo se visualiza el endpoint **`/api/books/search`** en Swagger UI:
+
+📷 Swagger View
+The following shows how the **`/api/books/search`** endpoint is displayed in Swagger UI:
 ![Swagger Google Books](docs/images/Swagger.png)
 
 

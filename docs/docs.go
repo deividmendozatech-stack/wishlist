@@ -23,11 +23,11 @@ const docTemplate = `{
                 "tags": [
                     "books"
                 ],
-                "summary": "Busca libros en Google Books",
+                "summary": "Search books using Google Books API",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Término de búsqueda",
+                        "description": "Search term",
                         "name": "q",
                         "in": "query",
                         "required": true
@@ -39,7 +39,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/service.GoogleBook"
+                                "$ref": "#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.GoogleBook"
                             }
                         }
                     },
@@ -60,14 +60,14 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Lista los usuarios registrados",
+                "summary": "List registered users",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/domain.User"
+                                "$ref": "#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.User"
                             }
                         }
                     }
@@ -85,15 +85,15 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Registrar nuevo usuario",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "Usuario",
+                        "description": "User data",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.RegisterUserRequest"
+                            "$ref": "#/definitions/internal_handler.RegisterUserRequest"
                         }
                     }
                 ],
@@ -118,15 +118,14 @@ const docTemplate = `{
                 "tags": [
                     "wishlist"
                 ],
-                "summary": "Lista las wishlists del usuario",
+                "summary": "List all wishlists for a user",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "additionalProperties": true
+                                "$ref": "#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.Wishlist"
                             }
                         }
                     }
@@ -142,15 +141,15 @@ const docTemplate = `{
                 "tags": [
                     "wishlist"
                 ],
-                "summary": "Crea una nueva wishlist",
+                "summary": "Create a new wishlist",
                 "parameters": [
                     {
-                        "description": "Datos de la lista",
+                        "description": "Wishlist data",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CreateWishlistRequest"
+                            "$ref": "#/definitions/internal_handler.CreateWishlistRequest"
                         }
                     }
                 ],
@@ -169,11 +168,11 @@ const docTemplate = `{
                 "tags": [
                     "wishlist"
                 ],
-                "summary": "Elimina una wishlist por ID",
+                "summary": "Delete a wishlist by ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID de la wishlist",
+                        "description": "Wishlist ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -200,11 +199,11 @@ const docTemplate = `{
                 "tags": [
                     "books"
                 ],
-                "summary": "Lista los libros de una wishlist",
+                "summary": "List all books from a wishlist",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID de la wishlist",
+                        "description": "Wishlist ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -216,8 +215,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "additionalProperties": true
+                                "$ref": "#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.Book"
                             }
                         }
                     }
@@ -233,22 +231,22 @@ const docTemplate = `{
                 "tags": [
                     "books"
                 ],
-                "summary": "Agrega un libro a la wishlist",
+                "summary": "Add a book to the wishlist",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID de la wishlist",
+                        "description": "Wishlist ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Datos del libro",
+                        "description": "Book data",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.AddBookRequest"
+                            "$ref": "#/definitions/internal_handler.AddBookRequest"
                         }
                     }
                 ],
@@ -270,18 +268,18 @@ const docTemplate = `{
                 "tags": [
                     "books"
                 ],
-                "summary": "Elimina un libro de una wishlist",
+                "summary": "Remove a book from a wishlist",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID de la wishlist",
+                        "description": "Wishlist ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "ID del libro",
+                        "description": "Book ID",
                         "name": "bookID",
                         "in": "path",
                         "required": true
@@ -302,22 +300,73 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.User": {
+        "github_com_deividmendozatech-stack_wishlist_internal_service.Book": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "description": "hash",
+                "author": {
+                    "description": "Book author",
                     "type": "string"
                 },
-                "username": {
+                "id": {
+                    "description": "Auto-increment primary key",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "Book title",
+                    "type": "string"
+                },
+                "wishlistID": {
+                    "description": "Reference to the parent wishlist",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_deividmendozatech-stack_wishlist_internal_service.GoogleBook": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }
         },
-        "handler.AddBookRequest": {
+        "github_com_deividmendozatech-stack_wishlist_internal_service.User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Auto-increment primary key",
+                    "type": "integer"
+                },
+                "password": {
+                    "description": "Hashed password",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Unique username",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_deividmendozatech-stack_wishlist_internal_service.Wishlist": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Auto-increment primary key",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name of the wishlist",
+                    "type": "string"
+                },
+                "userID": {
+                    "description": "Reference to the owning user",
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_handler.AddBookRequest": {
             "type": "object",
             "properties": {
                 "author": {
@@ -326,20 +375,20 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string",
-                    "example": "El Principito"
+                    "example": "The Little Prince"
                 }
             }
         },
-        "handler.CreateWishlistRequest": {
+        "internal_handler.CreateWishlistRequest": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
-                    "example": "Mi lista de libros"
+                    "example": "My book list"
                 }
             }
         },
-        "handler.RegisterUserRequest": {
+        "internal_handler.RegisterUserRequest": {
             "type": "object",
             "properties": {
                 "password": {
@@ -351,32 +400,18 @@ const docTemplate = `{
                     "example": "david"
                 }
             }
-        },
-        "service.GoogleBook": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Wishlist API",
-	Description:      "API para gestionar usuarios, wishlists y libros",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

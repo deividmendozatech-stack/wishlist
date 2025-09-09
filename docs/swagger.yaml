@@ -1,31 +1,66 @@
-basePath: /api
 definitions:
-  domain.User:
+  github_com_deividmendozatech-stack_wishlist_internal_service.Book:
     properties:
-      id:
-        type: integer
-      password:
-        description: hash
+      author:
+        description: Book author
         type: string
-      username:
+      id:
+        description: Auto-increment primary key
+        type: integer
+      title:
+        description: Book title
+        type: string
+      wishlistID:
+        description: Reference to the parent wishlist
+        type: integer
+    type: object
+  github_com_deividmendozatech-stack_wishlist_internal_service.GoogleBook:
+    properties:
+      author:
+        type: string
+      title:
         type: string
     type: object
-  handler.AddBookRequest:
+  github_com_deividmendozatech-stack_wishlist_internal_service.User:
+    properties:
+      id:
+        description: Auto-increment primary key
+        type: integer
+      password:
+        description: Hashed password
+        type: string
+      username:
+        description: Unique username
+        type: string
+    type: object
+  github_com_deividmendozatech-stack_wishlist_internal_service.Wishlist:
+    properties:
+      id:
+        description: Auto-increment primary key
+        type: integer
+      name:
+        description: Name of the wishlist
+        type: string
+      userID:
+        description: Reference to the owning user
+        type: integer
+    type: object
+  internal_handler.AddBookRequest:
     properties:
       author:
         example: Antoine de Saint-Exupéry
         type: string
       title:
-        example: El Principito
+        example: The Little Prince
         type: string
     type: object
-  handler.CreateWishlistRequest:
+  internal_handler.CreateWishlistRequest:
     properties:
       name:
-        example: Mi lista de libros
+        example: My book list
         type: string
     type: object
-  handler.RegisterUserRequest:
+  internal_handler.RegisterUserRequest:
     properties:
       password:
         example: "1234"
@@ -34,26 +69,13 @@ definitions:
         example: david
         type: string
     type: object
-  service.GoogleBook:
-    properties:
-      author:
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-    type: object
-host: localhost:8080
 info:
   contact: {}
-  description: API para gestionar usuarios, wishlists y libros
-  title: Wishlist API
-  version: "1.0"
 paths:
   /books/search:
     get:
       parameters:
-      - description: Término de búsqueda
+      - description: Search term
         in: query
         name: q
         required: true
@@ -65,13 +87,13 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/service.GoogleBook'
+              $ref: '#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.GoogleBook'
             type: array
         "400":
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Busca libros en Google Books
+      summary: Search books using Google Books API
       tags:
       - books
   /users:
@@ -83,9 +105,9 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/domain.User'
+              $ref: '#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.User'
             type: array
-      summary: Lista los usuarios registrados
+      summary: List registered users
       tags:
       - users
   /users/register:
@@ -93,12 +115,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Usuario
+      - description: User data
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/handler.RegisterUserRequest'
+          $ref: '#/definitions/internal_handler.RegisterUserRequest'
       produces:
       - application/json
       responses:
@@ -108,7 +130,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Registrar nuevo usuario
+      summary: Register a new user
       tags:
       - users
   /wishlist:
@@ -120,22 +142,21 @@ paths:
           description: OK
           schema:
             items:
-              additionalProperties: true
-              type: object
+              $ref: '#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.Wishlist'
             type: array
-      summary: Lista las wishlists del usuario
+      summary: List all wishlists for a user
       tags:
       - wishlist
     post:
       consumes:
       - application/json
       parameters:
-      - description: Datos de la lista
+      - description: Wishlist data
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/handler.CreateWishlistRequest'
+          $ref: '#/definitions/internal_handler.CreateWishlistRequest'
       produces:
       - application/json
       responses:
@@ -143,13 +164,13 @@ paths:
           description: Created
         "400":
           description: Bad Request
-      summary: Crea una nueva wishlist
+      summary: Create a new wishlist
       tags:
       - wishlist
   /wishlist/{id}:
     delete:
       parameters:
-      - description: ID de la wishlist
+      - description: Wishlist ID
         in: path
         name: id
         required: true
@@ -161,13 +182,13 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Elimina una wishlist por ID
+      summary: Delete a wishlist by ID
       tags:
       - wishlist
   /wishlist/{id}/books:
     get:
       parameters:
-      - description: ID de la wishlist
+      - description: Wishlist ID
         in: path
         name: id
         required: true
@@ -179,27 +200,26 @@ paths:
           description: OK
           schema:
             items:
-              additionalProperties: true
-              type: object
+              $ref: '#/definitions/github_com_deividmendozatech-stack_wishlist_internal_service.Book'
             type: array
-      summary: Lista los libros de una wishlist
+      summary: List all books from a wishlist
       tags:
       - books
     post:
       consumes:
       - application/json
       parameters:
-      - description: ID de la wishlist
+      - description: Wishlist ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Datos del libro
+      - description: Book data
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/handler.AddBookRequest'
+          $ref: '#/definitions/internal_handler.AddBookRequest'
       produces:
       - application/json
       responses:
@@ -209,18 +229,18 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Agrega un libro a la wishlist
+      summary: Add a book to the wishlist
       tags:
       - books
   /wishlist/{id}/books/{bookID}:
     delete:
       parameters:
-      - description: ID de la wishlist
+      - description: Wishlist ID
         in: path
         name: id
         required: true
         type: integer
-      - description: ID del libro
+      - description: Book ID
         in: path
         name: bookID
         required: true
@@ -232,7 +252,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Elimina un libro de una wishlist
+      summary: Remove a book from a wishlist
       tags:
       - books
 swagger: "2.0"

@@ -6,35 +6,39 @@ import (
 	"net/http"
 )
 
-// GoogleBook represents a simplified book model returned by the API.
+//
+// ─────────────────────────── GOOGLE BOOKS SERVICE ───────────────────────────
+//
+
+// GoogleBook represents a simplified result from Google Books API.
 type GoogleBook struct {
-	Title  string   `json:"title"`
-	Author []string `json:"author"`
+	Title  string `json:"title"`
+	Author string `json:"author"`
 }
 
-// GoogleBooksUsecase defines book search operations via Google Books.
-type GoogleBooksUsecase interface {
-	Search(query string) ([]GoogleBook, error)
-}
-
-// googleBooksService implements GoogleBooksUsecase.
+// googleBooksService implements the GoogleBooksUsecase interface.
+// It provides methods to search for books using the Google Books API.
 type googleBooksService struct{}
 
-// NewGoogleBooksService creates a GoogleBooksUsecase instance.
+// NewGoogleBooksService creates a new instance of googleBooksService.
 func NewGoogleBooksService() GoogleBooksUsecase {
 	return &googleBooksService{}
 }
 
-// Search queries the Google Books API and returns simplified results.
-func (s *googleBooksService) Search(query string) ([]GoogleBook, error) {
+// Search queries the Google Books API with the given search term
+// and returns a simplified list of books (title and first author).
+func (g *googleBooksService) Search(query string) ([]GoogleBook, error) {
 	url := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?q=%s", query)
+
+	// Send HTTP request to Google Books API
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var apiResp struct {
+	// Parse response JSON into a simplified structure
+	var data struct {
 		Items []struct {
 			VolumeInfo struct {
 				Title   string   `json:"title"`
@@ -43,16 +47,22 @@ func (s *googleBooksService) Search(query string) ([]GoogleBook, error) {
 		} `json:"items"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
 	}
 
-	books := make([]GoogleBook, 0, len(apiResp.Items))
-	for _, item := range apiResp.Items {
+	// Extract relevant data: title and first author
+	var books []GoogleBook
+	for _, item := range data.Items {
+		author := ""
+		if len(item.VolumeInfo.Authors) > 0 {
+			author = item.VolumeInfo.Authors[0]
+		}
 		books = append(books, GoogleBook{
 			Title:  item.VolumeInfo.Title,
-			Author: item.VolumeInfo.Authors,
+			Author: author,
 		})
 	}
+
 	return books, nil
 }
